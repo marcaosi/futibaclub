@@ -4,6 +4,6 @@ Este projeto foi entregue como parte do **Fullstack Academy** (edição FutibaCl
 
 **Participante:** Marcos Antônio dos Santos
 
-**Chave do Certificado:** 6C82-642A-4FC7-9729
+**Chave do Certificado:** D3F9-53DC-987C-E59F
 
 O certificado pode ser consultado em: https://certificados.devpleno.com
