@@ -39,6 +39,24 @@ const init = async () => {
     app.use('/admin', admin(connection))
     app.use('/groups', groups(connection))
 
+    let classification = null
+
+    app.get('/classification', async(req, res) => {
+        if(classification){
+            res.send(classification)
+        }else{
+            const query = `select users.id, users.name, sum(guessings.score) as score from users
+            left join guessings on guessings.user_id = users.id
+            group by users.id order by score DESC`
+
+            const [rows] = await connection.execute(query)
+            classification = rows
+            res.send(classification)
+        }
+        
+        
+    })
+
     app.listen(3000, err => {
         console.log('Futiba Club Server is running')
     })

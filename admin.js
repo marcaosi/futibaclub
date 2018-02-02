@@ -33,6 +33,61 @@ const init = connection => {
         res.redirect('/admin/games')
     })
 
+    app.post('/games/results', async (req, res) => {
+        const games = []
+        Object.keys(req.body).forEach(team => {
+            const parts = team.split('_')
+            const game = {
+                game_id: parseInt(parts[1]),
+                result_a: parseInt(req.body[team].a),
+                result_b: parseInt(req.body[team].b)
+            }
+
+            games.push(game)
+        })
+
+        for(let i = 0; i < games.length; i++){
+            const game = games[i]
+            const [guessings] = await connection.execute('select * from guessings where game_id = ?', [
+                game.game_id
+            ])
+
+            const batch = guessings.map(guess => {
+                let score = 0;
+                console.log(game, guess)
+                if(guess.result_a === game.result_a && guess.result_b === game.result_b){
+                    score = 100
+                }else {
+                    if(guess.result_a === game.result_a || guess.result_b === game.result_b){
+                        score += 25
+
+                        if(guess.result_a < guess.result_b && game.result_a < game.result_b){
+                            score += 25
+                        }
+
+                        if(guess.result_a > guess.result_b && game.result_a > game.result_b){
+                            score += 25
+                        }
+                    }
+                }
+                return connection.execute('update guessings set score = ? where id = ?', [
+                    score,
+                    guess.id
+                ])
+            })
+
+            await Promise.all(batch)
+
+            await connection.execute('update games set result_a = ?, result_b = ? where id = ?', [
+                game.result_a,
+                game.result_b,
+                game.game_id
+            ])
+        }
+
+        res.redirect('/admin/games')
+    })
+
     app.get('/games/delete/:id', async (req, res) => {
         await connection.execute('delete from games where id = ? limit 1', [
             req.params.id
